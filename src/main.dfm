@@ -1,7 +1,9 @@
 object Form1: TForm1
+  Left = 32
+  Top = 128
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'SMWF Config'
+  Caption = 'SMWF Settings'
   ClientHeight = 463
   ClientWidth = 229
   Color = clWhite

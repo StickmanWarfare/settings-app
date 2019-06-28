@@ -2,7 +2,7 @@ program Settings;
 
 uses
   Forms,
-  config in 'config.pas' {Form1};
+  main in 'main.pas' {Form1};
 
 {$R *.res}
 
