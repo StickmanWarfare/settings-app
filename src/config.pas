@@ -1,4 +1,3 @@
-
 unit config;
 
 interface
@@ -148,7 +147,15 @@ begin
     5: Lines.Add('texture_res='+IntToStr(TEXTURE_COLOR));
     end;
 
-    Lines.SaveToFile('data/video.ini');
+    if not (DirectoryExists('data')) then
+      if not (CreateDir('data')) then
+        raise Exception.Create('Cannot create data directory.');
+
+    if not (DirectoryExists('data/cfg')) then
+      if not (CreateDir('data/cfg')) then
+        raise Exception.Create('Cannot create data/cfg directory.');
+
+    Lines.SaveToFile('data/cfg/graphics.cfg');
   end;
  finally
   Lines.Clear;
@@ -165,9 +172,9 @@ windowed,normals,oldterrain:boolean;
 i:integer;
 begin
 
-if FileExists('data/video.ini') then
+if FileExists('data/cfg/graphics.cfg') then
 begin
-  assignfile(fil,'data/video.ini');
+  assignfile(fil,'data/cfg/graphics.cfg');
   reset(fil);
 
   while not eof(fil) do
