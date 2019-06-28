@@ -1,4 +1,4 @@
-unit config;
+unit main;
 
 interface
 
