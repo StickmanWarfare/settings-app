@@ -21,6 +21,7 @@ type
     TextureBox: TComboBox;
     Label_Texture: TLabel;
     CheckBox_Oldterrain: TCheckBox;
+    CheckBox_Vsync: TCheckBox;
     Label1: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure Button_LangClick(Sender: TObject);
@@ -136,6 +137,11 @@ begin
     else
       Lines.Add('oldterrain=0');
 
+    if Form1.CheckBox_Vsync.Checked then
+      Lines.Add('vsync=1')
+    else
+      Lines.Add('vsync=0');
+
     Lines.Add('langid='+IntToStr(LanguageId));
 
     case Form1.TextureBox.ItemIndex of
@@ -168,7 +174,7 @@ var
 fil:TextFile;
 line,l2:string;
 width,height,multisampling,texture_res:integer;
-windowed,normals,oldterrain:boolean;
+windowed,normals,oldterrain,vsync:boolean;
 i:integer;
 begin
 
@@ -189,6 +195,7 @@ begin
   if (l2 = 'windowed') then windowed := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
   if (l2 = 'normals') then normals := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
   if (l2 = 'oldterrain') then oldterrain := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
+  if (l2 = 'vsync') then vsync := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
   if (l2 = 'langid') then LanguageId := strtoint(copy(line,pos('=',line)+1,length(line)));
 
   if (l2 = 'texture_res') then texture_res := strtoint(copy(line,pos('=',line)+1,length(line)));
@@ -225,6 +232,7 @@ begin
   Form1.CheckBox_Windowed.Checked := windowed;
   Form1.CheckBox_Normals.Checked := normals and shader2;
   Form1.CheckBox_Oldterrain.Checked := oldterrain or not shader2;
+  Form1.CheckBox_Vsync.Checked := vsync;
 
 end
 else
