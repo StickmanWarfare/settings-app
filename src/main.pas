@@ -3,8 +3,22 @@ unit main;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Direct3d9, ShellApi;
+  Windows,
+  Messages,
+  SysUtils,
+  Variants,
+  Classes,
+  Graphics,
+  Controls,
+  Forms,
+  Dialogs,
+  StdCtrls,
+  Direct3d9,
+  ShellApi,
+  Registry;
+
+const
+  PROG_VER='1.1.0';
 
 type
   TForm1 = class(TForm)
@@ -22,16 +36,16 @@ type
     Label_Texture: TLabel;
     CheckBox_Oldterrain: TCheckBox;
     CheckBox_Vsync: TCheckBox;
-    Label1: TLabel;
+    Label_Shader: TLabel;
+    Label_Lang: TLabel;
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
     procedure Button_LangClick(Sender: TObject);
     procedure Button_SaveClick(Sender: TObject);
     procedure Button_PlayClick(Sender: TObject);
     procedure Button_QuitClick(Sender: TObject);
-  private
-    { Private declarations }
-  public
-    { Public declarations }
+    procedure LoadFormPositionFromRegistry;
+    procedure SaveFormPositionToRegistry;
   end;
 
 var
@@ -43,17 +57,12 @@ var
   shader2:boolean;
 
 const
-  TEXTURE_LOW_LEG=0;
-  TEXTURE_MED_LEG=1;
-  TEXTURE_HIGH_LEG=2;
-
   TEXTURE_COLOR=99;
   TEXTURE_SUPERLOW=100;
   TEXTURE_LOW=101;
   TEXTURE_MED=102;
   TEXTURE_HIGH=103;
   TEXTURE_VERYHIGH=104;
-  
 
 implementation
 
@@ -63,17 +72,21 @@ procedure setUiLanguage(lang:Single);
 var
 i:integer;
 begin
+Form1.CheckBox_Vsync.Caption := 'VSync';
 if (lang = LANG_HUNGARIAN) then
   begin
-    Form1.Label_VideoMode.Caption := 'Videó mód';
+    Form1.Label_VideoMode.Caption := 'Felbontás';
     Form1.Label_AAMode.Caption := 'Élsimítás';
-    Form1.Label_Texture.Caption := 'Textúra felbontás';
+    Form1.Label_Texture.Caption := 'Textúra minõség';
     Form1.CheckBox_Windowed.Caption := 'Futtatás ablakban';
-    Form1.Button_Save.Caption := 'Mentés';
-    Form1.Button_Play.Caption := 'Indítás';
+    Form1.CheckBox_Normals.Caption := '3D Textúrák';
+    Form1.Button_Save.Caption := 'Beállítások mentése';
+    Form1.Button_Play.Caption := 'Játék indítása';
     Form1.Button_Quit.Caption := 'Kilépés';
+    Form1.Button_Lang.Caption := 'Magyar';
+    Form1.Label_Lang.Caption := 'Nyelv';
     Form1.CheckBox_Oldterrain.Caption := 'Régi terep';
-    Form1.Label1.Caption := 'Nincs shader 2.0 támogatás';
+    Form1.Label_Shader.Caption := 'Az eszköz nem támogatja a Shader 2.0-t';
 
     i:=Form1.TextureBox.ItemIndex;
     Form1.TextureBox.Items.Clear;
@@ -88,15 +101,18 @@ if (lang = LANG_HUNGARIAN) then
   end
   else
   begin
-    Form1.Label_VideoMode.Caption := 'Video mode';
-    Form1.Label_AAMode.Caption := 'Anit-aliasing';
-    Form1.Label_Texture.Caption := 'Texture resolution';
+    Form1.Label_VideoMode.Caption := 'Resolution';
+    Form1.Label_AAMode.Caption := 'Anti-aliasing';
+    Form1.Label_Texture.Caption := 'Texture quality';
     Form1.CheckBox_Windowed.Caption := 'Windowed mode';
-    Form1.Button_Save.Caption := 'Save';
+    Form1.CheckBox_Normals.Caption := '3D Textures (Normal maps)';
+    Form1.Button_Save.Caption := 'Save settings';
     Form1.Button_Play.Caption := 'Play';
     Form1.Button_Quit.Caption := 'Quit';
+    Form1.Button_Lang.Caption := 'English';
+    Form1.Label_Lang.Caption := 'Language';
     Form1.CheckBox_Oldterrain.Caption := 'Old terrain';
-    Form1.Label1.Caption := 'No shader 2.0 support';
+    Form1.Label_Shader.Caption := 'Your device does not support Shader 2.0';
 
     i:=Form1.TextureBox.ItemIndex;
     Form1.TextureBox.Items.Clear;
@@ -105,10 +121,11 @@ if (lang = LANG_HUNGARIAN) then
     Form1.TextureBox.Items.Add('Medium');
     Form1.TextureBox.Items.Add('Low');
     Form1.TextureBox.Items.Add('Super low');
-    Form1.TextureBox.Items.Add('Colors');
+    Form1.TextureBox.Items.Add('Only Colors');
     Form1.TextureBox.SetTextBuf(PAnsiChar(Form1.TextureBox.Items.Strings[i]));
     Form1.TextureBox.ItemIndex:=i;
-  end
+  end;
+
 end;
 
 procedure save;
@@ -171,12 +188,21 @@ end;
 
 procedure load;
 var
-fil:TextFile;
-line,l2:string;
-width,height,multisampling,texture_res:integer;
-windowed,normals,oldterrain,vsync:boolean;
-i:integer;
+  fil:TextFile;
+  line,l2:string;
+  width,height:cardinal;
+  multisampling,texture_res:integer;
+  windowed,normals,oldterrain,vsync:boolean;
+  i:integer;
 begin
+  width:=0;
+  height:=0;
+  multisampling:=0;
+  texture_res:=0;
+  windowed:=false;
+  normals:=true;
+  oldterrain:=false;
+  vsync:=false;
 
 if FileExists('data/cfg/graphics.cfg') then
 begin
@@ -200,21 +226,19 @@ begin
 
   if (l2 = 'texture_res') then texture_res := strtoint(copy(line,pos('=',line)+1,length(line)));
 
-  if texture_res = TEXTURE_LOW_LEG then texture_res:= TEXTURE_LOW;
-  if texture_res = TEXTURE_MED_LEG then texture_res:= TEXTURE_MED;
-  if texture_res = TEXTURE_HIGH_LEG then texture_res:= TEXTURE_HIGH;
-
   end;
 
   closefile(fil);
 
   setUiLanguage(LanguageId);
 
+  if (width <> 0) and (width <> 0) then
   for i:=0 to length(modes) do
   begin
     if (modes[i].Width = width) and (modes[i].Height = height) then  Form1.AdapterBox.ItemIndex :=i;
   end;
 
+  if multisampling <> 0 then
   for i:=0 to length(samplings) do
   begin
     if (samplings[i] = multisampling) then  Form1.AAbox.ItemIndex :=i;
@@ -240,6 +264,13 @@ begin
   LanguageId:=GetSystemDefaultLangID and $3FF;
   SetUiLanguage(LanguageId);
   Form1.CheckBox_Normals.Checked := true;
+  Form1.TextureBox.ItemIndex:=0;
+  for i:=0 to length(modes) do
+    if (modes[i].Width = cardinal(getSystemMetrics(0))) and (modes[i].Height = cardinal(getSystemMetrics(1))) then
+    begin
+      Form1.AdapterBox.ItemIndex :=i;
+      break;
+    end;
 end;
 
 end;
@@ -248,10 +279,13 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
 adapternum:cardinal;
 mode:D3DDISPLAYMODE;
-i,ii:integer;
+i,ii,x:integer;
+found:boolean;
 j:_D3DMULTISAMPLE_TYPE;
 caps:D3DCAPS9;
 begin
+  LoadFormPositionFromRegistry;
+  Caption := Application.Title+' '+PROG_VER;
 
   g_pD3D := Direct3DCreate9(D3D_SDK_VERSION);
   adapternum := g_pD3D.GetAdapterModeCount(D3DADAPTER_DEFAULT,D3DFMT_X8R8G8B8);
@@ -262,8 +296,7 @@ begin
   CheckBox_Normals.Enabled := shader2;
   CheckBox_Oldterrain.Enabled := shader2;
 
-  if shader2 then Label1.Hide;
-
+  if shader2 then Label_Shader.Hide;
 
   SetLength(modes,adapternum);
 
@@ -271,13 +304,27 @@ begin
   for i:=0 to adapternum-1 do
   begin
     g_pD3D.EnumAdapterModes(D3DADAPTER_DEFAULT,D3DFMT_X8R8G8B8,i,mode);
-    if ( mode.Width >= 800) then
+    if mode.Width >= 800 then
     begin
-     modes[ii] := mode;
-     ii := ii+1;
-     AdapterBox.Items.Add(Concat(IntToStr(mode.Width),'x',IntToStr(mode.Height),' ',IntToStr(mode.RefreshRate),'Hz'));
+     found:=false;
+     for x:=0 to ii-1 do
+     begin
+       with modes[x] do
+       if (mode.Width = Width) and (mode.Height = Height) then
+       begin
+         found:=true;
+         break;
+       end;
+     end;
+     if not found then
+     begin
+       modes[ii] := mode;
+       ii := ii+1;
+       AdapterBox.Items.Add(Concat(IntToStr(mode.Width),'x',IntToStr(mode.Height)));
+     end;
     end;
   end;
+  AdapterBox.ItemIndex := 0;
 
   ii:= 0;
   for j:=D3DMULTISAMPLE_NONE to High(_D3DMULTISAMPLE_TYPE) do
@@ -290,7 +337,7 @@ begin
                                         nil) = D3D_OK then
       begin
         if (integer(j) = 0) then
-          AAbox.Items.Add('-')
+          AAbox.Items.Add('Off')
           else
           AAbox.Items.Add(IntToStr(integer(j))+'x');
         SetLength(samplings,ii+1);
@@ -298,20 +345,13 @@ begin
         ii:= ii +1;
       end;
     end;
-
-  AdapterBox.ItemIndex := 0;
   AAbox.ItemIndex := 0;
-  TextureBox.ItemIndex := 0;
 
   load;
-
 end;
-
-
 
 procedure TForm1.Button_LangClick(Sender: TObject);
 begin
-
 if (LanguageId = 14) then
 begin
   LanguageId := 9;
@@ -327,10 +367,8 @@ end;
 
 procedure TForm1.Button_SaveClick(Sender: TObject);
 begin
-
 Save;
 g_pD3D := nil;
-
 end;
 
 procedure TForm1.Button_PlayClick(Sender: TObject);
@@ -338,12 +376,56 @@ begin
 Save;
 g_pD3D := nil;
 ShellExecute(handle,'open',PChar('stickman.exe'), '','',SW_SHOWDEFAULT);
-
 end;
 
 procedure TForm1.Button_QuitClick(Sender: TObject);
 begin
 Close;
+end;
+
+procedure TForm1.SaveFormPositionToRegistry;
+var
+  r: TRegistry;
+begin
+  r := TRegistry.Create;
+  try
+    r.RootKey := HKEY_CURRENT_USER;
+    if r.OpenKey('\Software\Stickman\SettingsApp\Window', True) then
+    begin
+      r.WriteInteger('PosTop', Top);
+      r.WriteInteger('PosLeft', Left);
+      r.CloseKey;
+    end;
+  finally
+    r.Free;
+  end;
+end;
+
+procedure TForm1.LoadFormPositionFromRegistry;
+var
+  r: TRegistry;
+begin
+  r := TRegistry.Create;
+  try
+    r.RootKey := HKEY_CURRENT_USER;
+    r.Access := KEY_READ;
+    if r.OpenKey('\Software\Stickman\SettingsApp\Window', False) then
+    begin
+      try
+        Top := r.ReadInteger('PosTop');
+        Left := r.ReadInteger('PosLeft');
+      except
+      end;
+      r.CloseKey;
+    end;
+  finally
+    r.Free;
+  end;
+end;
+
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+SaveFormPositionToRegistry;
 end;
 
 end.

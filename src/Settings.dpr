@@ -8,7 +8,7 @@ uses
 
 begin
   Application.Initialize;
-  Application.Title := '';
+  Application.Title := 'SMWF Settings';
   Application.CreateForm(TForm1, Form1);
   Application.Run;
 end.

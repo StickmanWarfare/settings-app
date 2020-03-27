@@ -1,140 +1,185 @@
 object Form1: TForm1
-  Left = 32
-  Top = 128
+  Left = 100
+  Top = 100
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  Caption = 'SMWF Settings'
-  ClientHeight = 487
-  ClientWidth = 229
+  ClientHeight = 410
+  ClientWidth = 410
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'MS Sans Serif'
+  Font.Height = -13
+  Font.Name = 'Arial Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Position = poDefault
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 16
   object Label_VideoMode: TLabel
-    Left = 24
-    Top = 16
-    Width = 56
-    Height = 13
-    Caption = 'Video mode'
+    Left = 22
+    Top = 3
+    Width = 67
+    Height = 16
+    Caption = 'Resolution'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Arial Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object Label_AAMode: TLabel
-    Left = 24
-    Top = 80
-    Width = 56
-    Height = 13
+    Left = 254
+    Top = 140
+    Width = 79
+    Height = 16
     Caption = 'Anti-aliasing'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Arial Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object Label_Texture: TLabel
-    Left = 24
-    Top = 144
-    Width = 84
-    Height = 13
-    Caption = 'Texture resolution'
+    Left = 22
+    Top = 139
+    Width = 95
+    Height = 16
+    Caption = 'Texture quality'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Arial Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
-  object Label1: TLabel
+  object Label_Shader: TLabel
     Left = 24
-    Top = 296
-    Width = 105
-    Height = 13
-    Caption = 'No shader 2.0 support'
+    Top = 232
+    Width = 353
+    Height = 33
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'Your device does not support Shader 2.0'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clRed
+    Font.Height = -17
+    Font.Name = 'Arial Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+    Layout = tlCenter
+  end
+  object Label_Lang: TLabel
+    Left = 249
+    Top = 4
+    Width = 64
+    Height = 16
+    Caption = 'Language'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Arial Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object AdapterBox: TComboBox
-    Left = 24
-    Top = 40
-    Width = 185
-    Height = 21
-    ItemHeight = 13
+    Left = 22
+    Top = 24
+    Width = 187
+    Height = 24
+    ItemHeight = 16
     TabOrder = 0
   end
   object AAbox: TComboBox
-    Left = 24
-    Top = 104
-    Width = 185
-    Height = 21
-    ItemHeight = 13
-    TabOrder = 1
+    Left = 254
+    Top = 160
+    Width = 99
+    Height = 24
+    ItemHeight = 16
+    TabOrder = 7
   end
   object TextureBox: TComboBox
-    Left = 24
-    Top = 168
-    Width = 185
-    Height = 21
-    ItemHeight = 13
-    TabOrder = 2
+    Left = 22
+    Top = 160
+    Width = 187
+    Height = 24
+    ItemHeight = 16
+    TabOrder = 4
   end
   object CheckBox_Windowed: TCheckBox
-    Left = 24
-    Top = 200
-    Width = 185
-    Height = 17
+    Left = 22
+    Top = 56
+    Width = 139
+    Height = 21
     Caption = 'Windowed mode'
-    TabOrder = 3
+    TabOrder = 1
   end
   object Button_Lang: TButton
-    Left = 24
-    Top = 328
-    Width = 185
+    Left = 249
+    Top = 24
+    Width = 96
     Height = 25
-    Caption = 'Nyelv/Language'
+    Caption = 'English'
     TabOrder = 6
     OnClick = Button_LangClick
   end
   object Button_Save: TButton
-    Left = 24
-    Top = 360
-    Width = 185
-    Height = 25
-    Caption = 'Save'
-    TabOrder = 7
+    Left = 216
+    Top = 280
+    Width = 169
+    Height = 57
+    Caption = 'Save settings'
+    TabOrder = 8
     OnClick = Button_SaveClick
   end
   object Button_Play: TButton
-    Left = 24
-    Top = 392
-    Width = 185
-    Height = 25
+    Left = 22
+    Top = 280
+    Width = 163
+    Height = 113
     Caption = 'Play'
-    TabOrder = 8
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -24
+    Font.Name = 'Arial Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 9
     OnClick = Button_PlayClick
   end
   object Button_Quit: TButton
-    Left = 24
-    Top = 424
-    Width = 185
-    Height = 25
+    Left = 216
+    Top = 360
+    Width = 167
+    Height = 34
     Caption = 'Quit'
-    TabOrder = 9
+    TabOrder = 10
     OnClick = Button_QuitClick
   end
   object CheckBox_Normals: TCheckBox
-    Left = 24
-    Top = 224
-    Width = 169
-    Height = 17
+    Left = 22
+    Top = 192
+    Width = 187
+    Height = 21
     Caption = 'Normal maps'
-    TabOrder = 4
-  end
-  object CheckBox_Oldterrain: TCheckBox
-    Left = 24
-    Top = 248
-    Width = 161
-    Height = 17
-    Caption = 'Old terrain'
     TabOrder = 5
   end
+  object CheckBox_Oldterrain: TCheckBox
+    Left = 22
+    Top = 98
+    Width = 119
+    Height = 21
+    Caption = 'Old terrain'
+    TabOrder = 3
+  end
   object CheckBox_Vsync: TCheckBox
-    Left = 24
-    Top = 272
-    Width = 97
-    Height = 17
+    Left = 22
+    Top = 77
+    Width = 119
+    Height = 21
     Caption = 'VSync'
-    TabOrder = 10
+    TabOrder = 2
   end
 end
