@@ -4,7 +4,7 @@ object Form1: TForm1
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SMWF Settings'
-  ClientHeight = 463
+  ClientHeight = 487
   ClientWidth = 229
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -40,7 +40,7 @@ object Form1: TForm1
   end
   object Label1: TLabel
     Left = 24
-    Top = 272
+    Top = 296
     Width = 105
     Height = 13
     Caption = 'No shader 2.0 support'
@@ -79,7 +79,7 @@ object Form1: TForm1
   end
   object Button_Lang: TButton
     Left = 24
-    Top = 304
+    Top = 328
     Width = 185
     Height = 25
     Caption = 'Nyelv/Language'
@@ -88,7 +88,7 @@ object Form1: TForm1
   end
   object Button_Save: TButton
     Left = 24
-    Top = 336
+    Top = 360
     Width = 185
     Height = 25
     Caption = 'Save'
@@ -97,7 +97,7 @@ object Form1: TForm1
   end
   object Button_Play: TButton
     Left = 24
-    Top = 368
+    Top = 392
     Width = 185
     Height = 25
     Caption = 'Play'
@@ -106,7 +106,7 @@ object Form1: TForm1
   end
   object Button_Quit: TButton
     Left = 24
-    Top = 400
+    Top = 424
     Width = 185
     Height = 25
     Caption = 'Quit'
@@ -128,5 +128,13 @@ object Form1: TForm1
     Height = 17
     Caption = 'Old terrain'
     TabOrder = 5
+  end
+  object CheckBox_Vsync: TCheckBox
+    Left = 24
+    Top = 272
+    Width = 97
+    Height = 17
+    Caption = 'VSync'
+    TabOrder = 10
   end
 end
