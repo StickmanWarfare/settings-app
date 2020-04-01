@@ -3,7 +3,7 @@ object Form1: TForm1
   Top = 100
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
-  ClientHeight = 410
+  ClientHeight = 420
   ClientWidth = 410
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -16,7 +16,7 @@ object Form1: TForm1
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 16
-  object Label_VideoMode: TLabel
+  object Label_Resolution: TLabel
     Left = 22
     Top = 3
     Width = 67
@@ -29,8 +29,8 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label_AAMode: TLabel
-    Left = 254
+  object Label_AA: TLabel
+    Left = 249
     Top = 140
     Width = 79
     Height = 16
@@ -42,7 +42,7 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label_Texture: TLabel
+  object Label_TextureQ: TLabel
     Left = 22
     Top = 139
     Width = 95
@@ -55,7 +55,7 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object Label_Shader: TLabel
+  object Label_ShaderWarn: TLabel
     Left = 24
     Top = 232
     Width = 353
@@ -84,7 +84,20 @@ object Form1: TForm1
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object AdapterBox: TComboBox
+  object Label_FPS: TLabel
+    Left = 249
+    Top = 72
+    Width = 62
+    Height = 16
+    Caption = 'FPS Limit'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Arial Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object ComboBox_Resolution: TComboBox
     Left = 22
     Top = 24
     Width = 187
@@ -93,7 +106,7 @@ object Form1: TForm1
     TabOrder = 0
   end
   object AAbox: TComboBox
-    Left = 254
+    Left = 249
     Top = 160
     Width = 99
     Height = 24
@@ -158,7 +171,7 @@ object Form1: TForm1
     TabOrder = 10
     OnClick = Button_QuitClick
   end
-  object CheckBox_Normals: TCheckBox
+  object CheckBox_NormalMaps: TCheckBox
     Left = 22
     Top = 192
     Width = 187
@@ -166,7 +179,7 @@ object Form1: TForm1
     Caption = 'Normal maps'
     TabOrder = 5
   end
-  object CheckBox_Oldterrain: TCheckBox
+  object CheckBox_OldTerrain: TCheckBox
     Left = 22
     Top = 98
     Width = 119
@@ -174,12 +187,19 @@ object Form1: TForm1
     Caption = 'Old terrain'
     TabOrder = 3
   end
-  object CheckBox_Vsync: TCheckBox
+  object CheckBox_VSync: TCheckBox
     Left = 22
     Top = 77
     Width = 119
     Height = 21
     Caption = 'VSync'
     TabOrder = 2
+  end
+  object Edit_FPS: TMaskEdit
+    Left = 249
+    Top = 91
+    Width = 81
+    Height = 24
+    TabOrder = 11
   end
 end

@@ -13,31 +13,38 @@ uses
   Forms,
   Dialogs,
   StdCtrls,
-  Direct3d9,
+  Direct3D9,
   ShellApi,
-  Registry;
+  Registry,
+  Mask;
 
 const
   PROG_VER='1.1.0';
 
 type
   TForm1 = class(TForm)
-    Label_VideoMode: TLabel;
-    Label_AAMode: TLabel;
-    AAbox: TComboBox;
+    Label_Resolution: TLabel;
+    Label_AA: TLabel;
+    Label_ShaderWarn: TLabel;
+    Label_Lang: TLabel;
+    Label_TextureQ: TLabel;
+    Label_FPS: TLabel;
     Button_Lang: TButton;
     Button_Save: TButton;
     Button_Play: TButton;
     Button_Quit: TButton;
-    AdapterBox: TComboBox;
+
+    ComboBox_Resolution: TComboBox;
     CheckBox_Windowed: TCheckBox;
-    CheckBox_Normals: TCheckBox;
+    CheckBox_NormalMaps: TCheckBox;
+
+    CheckBox_OldTerrain: TCheckBox;
+    CheckBox_VSync: TCheckBox;
+    AAbox: TComboBox;
     TextureBox: TComboBox;
-    Label_Texture: TLabel;
-    CheckBox_Oldterrain: TCheckBox;
-    CheckBox_Vsync: TCheckBox;
-    Label_Shader: TLabel;
-    Label_Lang: TLabel;
+    Edit_FPS: TMaskEdit;
+    
+
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure Button_LangClick(Sender: TObject);
@@ -72,21 +79,20 @@ procedure setUiLanguage(lang:Single);
 var
 i:integer;
 begin
-Form1.CheckBox_Vsync.Caption := 'VSync';
 if (lang = LANG_HUNGARIAN) then
   begin
-    Form1.Label_VideoMode.Caption := 'Felbontás';
-    Form1.Label_AAMode.Caption := 'Élsimítás';
-    Form1.Label_Texture.Caption := 'Textúra minõség';
+    Form1.Label_Resolution.Caption := 'Felbontás';
+    Form1.Label_AA.Caption := 'Élsimítás';
+    Form1.Label_TextureQ.Caption := 'Textúra minõség';
     Form1.CheckBox_Windowed.Caption := 'Futtatás ablakban';
-    Form1.CheckBox_Normals.Caption := '3D Textúrák';
+    Form1.CheckBox_NormalMaps.Caption := '3D Textúrák';
     Form1.Button_Save.Caption := 'Beállítások mentése';
     Form1.Button_Play.Caption := 'Játék indítása';
     Form1.Button_Quit.Caption := 'Kilépés';
     Form1.Button_Lang.Caption := 'Magyar';
     Form1.Label_Lang.Caption := 'Nyelv';
-    Form1.CheckBox_Oldterrain.Caption := 'Régi terep';
-    Form1.Label_Shader.Caption := 'Az eszköz nem támogatja a Shader 2.0-t';
+    Form1.CheckBox_OldTerrain.Caption := 'Régi terep';
+    Form1.Label_ShaderWarn.Caption := 'Az eszköz nem támogatja a Shader 2.0-t';
 
     i:=Form1.TextureBox.ItemIndex;
     Form1.TextureBox.Items.Clear;
@@ -95,24 +101,24 @@ if (lang = LANG_HUNGARIAN) then
     Form1.TextureBox.Items.Add('Közepes');
     Form1.TextureBox.Items.Add('Alacsony');
     Form1.TextureBox.Items.Add('Szuper alacsony');
-    Form1.TextureBox.Items.Add('Színek');
+    Form1.TextureBox.Items.Add('Csak színek');
     Form1.TextureBox.SetTextBuf(PAnsiChar(Form1.TextureBox.Items.Strings[i]));
     Form1.TextureBox.ItemIndex:=i;
   end
   else
   begin
-    Form1.Label_VideoMode.Caption := 'Resolution';
-    Form1.Label_AAMode.Caption := 'Anti-aliasing';
-    Form1.Label_Texture.Caption := 'Texture quality';
+    Form1.Label_Resolution.Caption := 'Resolution';
+    Form1.Label_AA.Caption := 'Anti-aliasing';
+    Form1.Label_TextureQ.Caption := 'Texture quality';
     Form1.CheckBox_Windowed.Caption := 'Windowed mode';
-    Form1.CheckBox_Normals.Caption := '3D Textures (Normal maps)';
+    Form1.CheckBox_NormalMaps.Caption := '3D Textures (Normal maps)';
     Form1.Button_Save.Caption := 'Save settings';
     Form1.Button_Play.Caption := 'Play';
     Form1.Button_Quit.Caption := 'Quit';
     Form1.Button_Lang.Caption := 'English';
     Form1.Label_Lang.Caption := 'Language';
-    Form1.CheckBox_Oldterrain.Caption := 'Old terrain';
-    Form1.Label_Shader.Caption := 'Your device does not support Shader 2.0';
+    Form1.CheckBox_OldTerrain.Caption := 'Old terrain';
+    Form1.Label_ShaderWarn.Caption := 'Your device does not support Shader 2.0';
 
     i:=Form1.TextureBox.ItemIndex;
     Form1.TextureBox.Items.Clear;
@@ -131,12 +137,13 @@ end;
 procedure save;
 var
 Lines: TStrings;
+tmp: string;
 begin
    Lines := TStringList.Create;
   try
   begin
-    Lines.Add('width='+IntToStr(modes[Form1.AdapterBox.ItemIndex].width));
-    Lines.Add('height='+IntToStr(modes[Form1.AdapterBox.ItemIndex].height));
+    Lines.Add('width='+IntToStr(modes[Form1.ComboBox_Resolution.ItemIndex].width));
+    Lines.Add('height='+IntToStr(modes[Form1.ComboBox_Resolution.ItemIndex].height));
     Lines.Add('multisampling='+IntToStr(samplings[Form1.AAbox.ItemIndex]));
 
     if Form1.CheckBox_Windowed.Checked then
@@ -144,20 +151,24 @@ begin
     else
       Lines.Add('windowed=0');
 
-    if Form1.CheckBox_Normals.Checked then
+    if Form1.CheckBox_NormalMaps.Checked then
       Lines.Add('normals=1')
     else
       Lines.Add('normals=0');
 
-    if Form1.CheckBox_Oldterrain.Checked then
+    if Form1.CheckBox_OldTerrain.Checked then
       Lines.Add('oldterrain=1')
     else
       Lines.Add('oldterrain=0');
 
-    if Form1.CheckBox_Vsync.Checked then
+    if Form1.CheckBox_VSync.Checked then
       Lines.Add('vsync=1')
     else
       Lines.Add('vsync=0');
+
+    tmp := StringReplace(Form1.Edit_FPS.Text, ' ', '', [rfReplaceAll]);
+    if tmp <> '' then
+      Lines.Add('fpslimit='+IntToStr(StrToInt(tmp)));
 
     Lines.Add('langid='+IntToStr(LanguageId));
 
@@ -191,7 +202,7 @@ var
   fil:TextFile;
   line,l2:string;
   width,height:cardinal;
-  multisampling,texture_res:integer;
+  multisampling,texture_res,fpslimit:integer;
   windowed,normals,oldterrain,vsync:boolean;
   i:integer;
 begin
@@ -199,6 +210,7 @@ begin
   height:=0;
   multisampling:=0;
   texture_res:=0;
+  fpslimit:=0;
   windowed:=false;
   normals:=true;
   oldterrain:=false;
@@ -216,14 +228,13 @@ begin
 
   if (l2 = 'width') then width := strtoint(copy(line,pos('=',line)+1,length(line)));
   if (l2 = 'height') then height := strtoint(copy(line,pos('=',line)+1,length(line)));
-
   if (l2 = 'multisampling') then multisampling := strtoint(copy(line,pos('=',line)+1,length(line)));
   if (l2 = 'windowed') then windowed := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
   if (l2 = 'normals') then normals := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
   if (l2 = 'oldterrain') then oldterrain := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
   if (l2 = 'vsync') then vsync := strtoint(copy(line,pos('=',line)+1,length(line)))=1;
+  if (l2 = 'fpslimit') then fpslimit := strtoint(copy(line,pos('=',line)+1,length(line)));
   if (l2 = 'langid') then LanguageId := strtoint(copy(line,pos('=',line)+1,length(line)));
-
   if (l2 = 'texture_res') then texture_res := strtoint(copy(line,pos('=',line)+1,length(line)));
 
   end;
@@ -235,7 +246,7 @@ begin
   if (width <> 0) and (width <> 0) then
   for i:=0 to length(modes) do
   begin
-    if (modes[i].Width = width) and (modes[i].Height = height) then  Form1.AdapterBox.ItemIndex :=i;
+    if (modes[i].Width = width) and (modes[i].Height = height) then  Form1.ComboBox_Resolution.ItemIndex :=i;
   end;
 
   if multisampling <> 0 then
@@ -254,21 +265,22 @@ begin
   end;
 
   Form1.CheckBox_Windowed.Checked := windowed;
-  Form1.CheckBox_Normals.Checked := normals and shader2;
-  Form1.CheckBox_Oldterrain.Checked := oldterrain or not shader2;
-  Form1.CheckBox_Vsync.Checked := vsync;
+  Form1.CheckBox_NormalMaps.Checked := normals and shader2;
+  Form1.CheckBox_OldTerrain.Checked := oldterrain or not shader2;
+  Form1.CheckBox_VSync.Checked := vsync;
+  Form1.Edit_FPS.Text := IntToStr(fpslimit);
 
 end
 else
 begin
   LanguageId:=GetSystemDefaultLangID and $3FF;
   SetUiLanguage(LanguageId);
-  Form1.CheckBox_Normals.Checked := true;
+  Form1.CheckBox_NormalMaps.Checked := true;
   Form1.TextureBox.ItemIndex:=0;
   for i:=0 to length(modes) do
     if (modes[i].Width = cardinal(getSystemMetrics(0))) and (modes[i].Height = cardinal(getSystemMetrics(1))) then
     begin
-      Form1.AdapterBox.ItemIndex :=i;
+      Form1.ComboBox_Resolution.ItemIndex :=i;
       break;
     end;
 end;
@@ -286,6 +298,7 @@ caps:D3DCAPS9;
 begin
   LoadFormPositionFromRegistry;
   Caption := Application.Title+' '+PROG_VER;
+  Edit_FPS.EditMask := '999';
 
   g_pD3D := Direct3DCreate9(D3D_SDK_VERSION);
   adapternum := g_pD3D.GetAdapterModeCount(D3DADAPTER_DEFAULT,D3DFMT_X8R8G8B8);
@@ -293,10 +306,10 @@ begin
   g_pD3D.GetDeviceCaps(D3DADAPTER_DEFAULT,D3DDEVTYPE_HAL,caps);
   shader2:=caps.PixelShaderVersion>D3DPS_VERSION(2,0);
 
-  CheckBox_Normals.Enabled := shader2;
-  CheckBox_Oldterrain.Enabled := shader2;
+  CheckBox_NormalMaps.Enabled := shader2;
+  CheckBox_OldTerrain.Enabled := shader2;
 
-  if shader2 then Label_Shader.Hide;
+  if shader2 then Label_ShaderWarn.Hide;
 
   SetLength(modes,adapternum);
 
@@ -320,11 +333,11 @@ begin
      begin
        modes[ii] := mode;
        ii := ii+1;
-       AdapterBox.Items.Add(Concat(IntToStr(mode.Width),'x',IntToStr(mode.Height)));
+       ComboBox_Resolution.Items.Add(Concat(IntToStr(mode.Width),'x',IntToStr(mode.Height)));
      end;
     end;
   end;
-  AdapterBox.ItemIndex := 0;
+  ComboBox_Resolution.ItemIndex := 0;
 
   ii:= 0;
   for j:=D3DMULTISAMPLE_NONE to High(_D3DMULTISAMPLE_TYPE) do
@@ -353,15 +366,11 @@ end;
 procedure TForm1.Button_LangClick(Sender: TObject);
 begin
 if (LanguageId = 14) then
-begin
-  LanguageId := 9;
-  SetUiLanguage(LanguageId);
-end
+  LanguageId := 9
 else
-begin
   LanguageId := 14;
-  SetUiLanguage(LanguageId);
-end;
+SetUiLanguage(LanguageId);
+
 
 end;
 
