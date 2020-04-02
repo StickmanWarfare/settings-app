@@ -138,8 +138,9 @@ procedure save;
 var
 Lines: TStrings;
 tmp: string;
+fps: cardinal;
 begin
-   Lines := TStringList.Create;
+  Lines := TStringList.Create;
   try
   begin
     Lines.Add('width='+IntToStr(modes[Form1.ComboBox_Resolution.ItemIndex].width));
@@ -168,8 +169,18 @@ begin
 
     tmp := StringReplace(Form1.Edit_FPS.Text, ' ', '', [rfReplaceAll]);
     if tmp <> '' then
-      Lines.Add('fpslimit='+IntToStr(StrToInt(tmp)));
-
+    begin
+      fps:=StrToInt(tmp);
+      if fps > 500 then fps:=500; //FPS max
+      if fps < 30 then fps:=0; //FPS min
+      if fps = 0 then
+        Form1.Edit_FPS.Text := ''
+      else
+      begin
+        Lines.Add('fpslimit='+IntToStr(fps));
+        Form1.Edit_FPS.Text := IntToStr(fps);
+      end;
+    end;
     Lines.Add('langid='+IntToStr(LanguageId));
 
     case Form1.TextureBox.ItemIndex of
@@ -268,7 +279,8 @@ begin
   Form1.CheckBox_NormalMaps.Checked := normals and shader2;
   Form1.CheckBox_OldTerrain.Checked := oldterrain or not shader2;
   Form1.CheckBox_VSync.Checked := vsync;
-  Form1.Edit_FPS.Text := IntToStr(fpslimit);
+  if fpslimit <> 0 then
+    Form1.Edit_FPS.Text := IntToStr(fpslimit);
 
 end
 else
@@ -298,7 +310,7 @@ caps:D3DCAPS9;
 begin
   LoadFormPositionFromRegistry;
   Caption := Application.Title+' '+PROG_VER;
-  Edit_FPS.EditMask := '999';
+  Edit_FPS.EditMask := '!999';
 
   g_pD3D := Direct3DCreate9(D3D_SDK_VERSION);
   adapternum := g_pD3D.GetAdapterModeCount(D3DADAPTER_DEFAULT,D3DFMT_X8R8G8B8);
