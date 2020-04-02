@@ -19,7 +19,7 @@ uses
   Mask;
 
 const
-  PROG_VER='1.1.0';
+  PROG_VER='1.2.0';
 
 type
   TForm1 = class(TForm)
